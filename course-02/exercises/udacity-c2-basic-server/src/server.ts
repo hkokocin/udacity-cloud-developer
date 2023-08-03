@@ -3,6 +3,7 @@ import express, { Router, Request, Response } from 'express';
 const bodyParser = require('body-parser')
 
 import { Car, cars as cars_list } from './cars';
+import { request } from 'http';
 
 (async () => {
   let cars:Car[]  = cars_list;
@@ -71,11 +72,29 @@ import { Car, cars as cars_list } from './cars';
   } );
 
   // @TODO Add an endpoint to GET a list of cars
-  // it should be filterable by make with a query paramater
+  app.get("/cars",
+      async (request: Request, response: Response ) => {
+        return response.status(200)
+            .send (cars_list)        
+      }
+  )
 
   // @TODO Add an endpoint to get a specific car
-  // it should require id
-  // it should fail gracefully if no matching car is found
+  app.get("/car",
+      async (request: Request, response:Response) => {
+        const { model } = request.query
+
+        if(!model)
+          return response.status(400).send("parameter 'model' is required")
+        
+        const car = cars_list.find((car) => car.model === model)
+
+        if(!car)
+          return response.status(404).send("car of model '" + model + "' not found.")
+
+        return response.status(200).send(car)
+      }
+  )
 
   /// @TODO Add an endpoint to post a new car to our list
   // it should require id, type, model, and cost
